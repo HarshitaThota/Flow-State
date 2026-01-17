@@ -37,7 +37,7 @@ interface AppState {
   addGoal: (goal: Omit<Goal, 'id' | 'progress'>) => Promise<void>;
   updateGoal: (goalId: string, updates: Partial<Goal>) => Promise<void>;
   completeTask: (goalId: string, taskId: string) => Promise<void>;
-  completeOnboarding: () => Promise<void>;
+  setOnboarded: (value: boolean) => Promise<void>;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -165,8 +165,8 @@ export const useStore = create<AppState>((set, get) => ({
     set({ goals: updatedGoals });
   },
 
-  completeOnboarding: async () => {
-    await storage.setOnboarded(true);
-    set({ isOnboarded: true });
+  setOnboarded: async (value) => {
+    await storage.setOnboarded(value);
+    set({ isOnboarded: value });
   },
 }));
