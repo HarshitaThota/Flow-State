@@ -2,7 +2,7 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from '../../hooks/useStore';
 
 export default function InsightsScreen() {
-  const { energyLogs, profile } = useStore();
+  const { energyLogs } = useStore();
 
   // Calculate average energy by phase
   const energyByPhase = energyLogs.reduce(
