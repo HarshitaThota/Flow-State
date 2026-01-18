@@ -9,10 +9,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import type { EnergyLog } from '../../shared/types';
 import { Button } from '../components/Button';
 import { useStore } from '../hooks/useStore';
 
-const moodOptions = [
+type Mood = EnergyLog['mood'];
+type Focus = EnergyLog['focus'];
+
+const moodOptions: {
+  value: NonNullable<Mood>;
+  emoji: string;
+  label: string;
+}[] = [
   { value: 'great', emoji: '😊', label: 'Great' },
   { value: 'good', emoji: '🙂', label: 'Good' },
   { value: 'okay', emoji: '😐', label: 'Okay' },
@@ -20,7 +28,11 @@ const moodOptions = [
   { value: 'rough', emoji: '😩', label: 'Rough' },
 ];
 
-const focusOptions = [
+const focusOptions: {
+  value: NonNullable<Focus>;
+  emoji: string;
+  label: string;
+}[] = [
   { value: 'sharp', emoji: '🎯', label: 'Sharp' },
   { value: 'good', emoji: '👍', label: 'Good' },
   { value: 'scattered', emoji: '🌪️', label: 'Scattered' },
@@ -32,8 +44,8 @@ export default function LogEnergyScreen() {
   const { logEnergy } = useStore();
 
   const [energyLevel, setEnergyLevel] = useState(5);
-  const [mood, setMood] = useState<string | null>(null);
-  const [focus, setFocus] = useState<string | null>(null);
+  const [mood, setMood] = useState<Mood>(undefined);
+  const [focus, setFocus] = useState<Focus>(undefined);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 

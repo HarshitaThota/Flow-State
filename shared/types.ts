@@ -1,6 +1,8 @@
 // Core types shared between mobile and backend
 
 export type CyclePhase = 'menstrual' | 'follicular' | 'ovulation' | 'luteal';
+export type Chronotype = 'early_bird' | 'night_owl' | 'third_bird';
+export type CognitiveLoad = 'deep' | 'medium' | 'light' | 'autopilot';
 
 export interface CycleDay {
   date: string; // ISO date
@@ -13,8 +15,8 @@ export interface EnergyLog {
   id: string;
   timestamp: string;
   energyLevel: number; // 1-10
-  focusLevel: number; // 1-10
-  mood: 'great' | 'good' | 'okay' | 'low' | 'bad';
+  mood?: 'great' | 'good' | 'okay' | 'low' | 'rough';
+  focus?: 'sharp' | 'good' | 'scattered' | 'foggy';
   notes?: string;
   cycleDay?: number;
   cyclePhase?: CyclePhase;
@@ -38,8 +40,8 @@ export interface Goal {
   id: string;
   title: string;
   description?: string;
-  type: 'daily' | 'weekly' | 'monthly' | 'longterm';
-  targetDate?: string;
+  cognitiveLoad: CognitiveLoad;
+  status: 'active' | 'completed' | 'paused';
   tasks: Task[];
   progress: number; // 0-100
 }
@@ -50,8 +52,9 @@ export interface UserProfile {
   cycleLength: number; // average, typically 28
   periodLength: number; // average, typically 5
   lastPeriodStart: string; // ISO date
-  chronotype: 'early_bird' | 'night_owl' | 'intermediate';
-  peakHoursOverride?: { start: number; end: number }; // manual override
+  chronotype: Chronotype;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DayRecommendation {
