@@ -1,5 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { format, subDays } from 'date-fns';
+import { format, subDays, parseISO } from 'date-fns';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -8,11 +8,14 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { Button } from '../../components/Button';
 import { ProgressDots } from '../../components/ProgressDots';
+
+const isWeb = Platform.OS === 'web';
 
 export default function CycleScreen() {
   const router = useRouter();
@@ -41,26 +44,45 @@ export default function CycleScreen() {
         {/* Last Period Start */}
         <View style={styles.section}>
           <Text style={styles.label}>When did your last period start?</Text>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Text style={styles.dateButtonText}>
-              {format(lastPeriodStart, 'MMMM d, yyyy')}
-            </Text>
-          </TouchableOpacity>
 
-          {showDatePicker && (
-            <DateTimePicker
-              value={lastPeriodStart}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              maximumDate={new Date()}
-              onChange={(_event, date) => {
-                setShowDatePicker(Platform.OS === 'ios');
-                if (date) setLastPeriodStart(date);
+          {isWeb ? (
+            <TextInput
+              style={styles.dateInput}
+              value={format(lastPeriodStart, 'yyyy-MM-dd')}
+              onChangeText={(text) => {
+                try {
+                  const date = parseISO(text);
+                  if (!isNaN(date.getTime())) {
+                    setLastPeriodStart(date);
+                  }
+                } catch {}
               }}
+              placeholder="YYYY-MM-DD"
             />
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.dateButton}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text style={styles.dateButtonText}>
+                  {format(lastPeriodStart, 'MMMM d, yyyy')}
+                </Text>
+              </TouchableOpacity>
+
+              {showDatePicker && (
+                <DateTimePicker
+                  value={lastPeriodStart}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  maximumDate={new Date()}
+                  onChange={(_event, date) => {
+                    setShowDatePicker(Platform.OS === 'ios');
+                    if (date) setLastPeriodStart(date);
+                  }}
+                />
+              )}
+            </>
           )}
         </View>
 
@@ -196,6 +218,16 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginTop: 8,
+  },
+  dateInput: {
+    backgroundColor: '#f3e8ff',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#7c3aed',
+    textAlign: 'center',
   },
   dateButtonText: {
     fontSize: 18,

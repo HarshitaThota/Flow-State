@@ -54,6 +54,23 @@ export default function RootLayout() {
             headerTintColor: '#1f2937',
           }}
         />
+        <Stack.Screen
+          name="log-symptoms"
+          options={{
+            headerShown: true,
+            title: 'Log Symptoms',
+            presentation: 'modal',
+            headerStyle: { backgroundColor: '#ffffff' },
+            headerTintColor: '#1f2937',
+          }}
+        />
+        <Stack.Screen
+          name="log-period"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
       </Stack>
     </>
   );

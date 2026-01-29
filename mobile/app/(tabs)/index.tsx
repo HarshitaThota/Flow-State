@@ -134,27 +134,47 @@ export default function TodayScreen() {
         {/* Quick Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick actions</Text>
-          <View style={styles.actionsRow}>
+
+          {/* Period Started Button - Prominent */}
+          <TouchableOpacity
+            style={styles.periodButton}
+            onPress={() => router.push('/log-period')}
+          >
+            <Text style={styles.periodButtonEmoji}>🩸</Text>
+            <View style={styles.periodButtonText}>
+              <Text style={styles.periodButtonTitle}>Period started?</Text>
+              <Text style={styles.periodButtonSubtitle}>Tap to log</Text>
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.actionsGrid}>
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => router.push('/log-energy')}
             >
               <Text style={styles.actionEmoji}>⚡</Text>
-              <Text style={styles.actionLabel}>Log Energy</Text>
+              <Text style={styles.actionLabel}>Energy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => router.push('/log-symptoms')}
+            >
+              <Text style={styles.actionEmoji}>📝</Text>
+              <Text style={styles.actionLabel}>Symptoms</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => router.push('/(tabs)/cycle')}
             >
               <Text style={styles.actionEmoji}>📅</Text>
-              <Text style={styles.actionLabel}>View Cycle</Text>
+              <Text style={styles.actionLabel}>Calendar</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => router.push('/(tabs)/goals')}
+              onPress={() => router.push('/(tabs)/insights')}
             >
-              <Text style={styles.actionEmoji}>🎯</Text>
-              <Text style={styles.actionLabel}>My Goals</Text>
+              <Text style={styles.actionEmoji}>📊</Text>
+              <Text style={styles.actionLabel}>Insights</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -284,12 +304,37 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#991b1b',
   },
-  actionsRow: {
+  periodButton: {
     flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fce4ec',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  periodButtonEmoji: {
+    fontSize: 28,
+    marginRight: 12,
+  },
+  periodButtonText: {
+    flex: 1,
+  },
+  periodButtonTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#c2185b',
+  },
+  periodButtonSubtitle: {
+    fontSize: 13,
+    color: '#e91e63',
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   actionButton: {
-    flex: 1,
+    width: '47%',
     backgroundColor: '#f9fafb',
     padding: 16,
     borderRadius: 12,
