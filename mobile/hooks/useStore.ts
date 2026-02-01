@@ -6,11 +6,13 @@ import type {
   UserProfile,
 } from '../../shared/types';
 import * as storage from '../services/storage';
+import { supabase, updateProfile as updateSupabaseProfile, logEnergy as logSupabaseEnergy } from '../services/supabase';
 import { getCycleForecast, getTodayCycleInfo } from '../utils/cycle';
 
 interface AppState {
   // User
   profile: UserProfile | null;
+  userId: string | null;
   isOnboarded: boolean;
 
   // Cycle
@@ -42,6 +44,7 @@ interface AppState {
 
 export const useStore = create<AppState>((set, get) => ({
   profile: null,
+  userId: null,
   isOnboarded: false,
   todayCycle: null,
   cycleForecast: [],
@@ -53,17 +56,66 @@ export const useStore = create<AppState>((set, get) => ({
   initialize: async () => {
     set({ isLoading: true });
 
-    const [profile, energyLogs, goals, isOnboarded] = await Promise.all([
-      storage.getProfile(),
-      storage.getEnergyLogs(),
-      storage.getGoals(),
-      storage.isOnboarded(),
-    ]);
+    // Get current user from Supabase
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      set({ isLoading: false, isOnboarded: false });
+      return;
+    }
+
+    // Get profile from Supabase
+    const { data: supabaseProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    // Convert to app format
+    let profile: UserProfile | null = null;
+    let isOnboarded = false;
+
+    if (supabaseProfile) {
+      profile = {
+        id: supabaseProfile.id,
+        name: supabaseProfile.name || '',
+        cycleLength: supabaseProfile.cycle_length || 28,
+        periodLength: supabaseProfile.period_length || 5,
+        lastPeriodStart: supabaseProfile.last_period_start || '',
+        chronotype: supabaseProfile.chronotype || 'intermediate',
+        createdAt: supabaseProfile.created_at,
+        updatedAt: supabaseProfile.updated_at,
+      };
+      // Consider onboarded if they have cycle info
+      isOnboarded = !!supabaseProfile.last_period_start;
+    }
+
+    // Get energy logs from Supabase
+    const { data: supabaseEnergyLogs } = await supabase
+      .from('energy_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('timestamp', { ascending: false })
+      .limit(100);
+
+    const energyLogs: EnergyLog[] = (supabaseEnergyLogs || []).map(log => ({
+      id: log.id,
+      timestamp: log.timestamp,
+      energyLevel: log.energy_level,
+      mood: log.mood,
+      focus: log.focus,
+      notes: log.notes,
+      cycleDay: log.cycle_day,
+      cyclePhase: log.cycle_phase,
+    }));
+
+    // Get goals (still local for now)
+    const goals = await storage.getGoals();
 
     let todayCycle: CycleDay | null = null;
     let cycleForecast: CycleDay[] = [];
 
-    if (profile) {
+    if (profile && profile.lastPeriodStart) {
       todayCycle = getTodayCycleInfo(profile);
       cycleForecast = getCycleForecast(profile, 30);
     }
@@ -75,6 +127,7 @@ export const useStore = create<AppState>((set, get) => ({
 
     set({
       profile,
+      userId: user.id,
       isOnboarded,
       todayCycle,
       cycleForecast,
@@ -86,17 +139,38 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   setProfile: async (profile) => {
+    const { userId } = get();
+
+    // Save to Supabase
+    if (userId) {
+      await updateSupabaseProfile(userId, {
+        name: profile.name,
+        cycle_length: profile.cycleLength,
+        period_length: profile.periodLength,
+        last_period_start: profile.lastPeriodStart,
+        chronotype: profile.chronotype,
+      });
+    }
+
+    // Also save locally as backup
     await storage.saveProfile(profile);
+
     const todayCycle = getTodayCycleInfo(profile);
     const cycleForecast = getCycleForecast(profile, 30);
-    set({ profile, todayCycle, cycleForecast });
+    set({ profile, todayCycle, cycleForecast, isOnboarded: true });
   },
 
   updateLastPeriod: async (date) => {
-    const { profile } = get();
+    const { profile, userId } = get();
     if (!profile) return;
 
     const updatedProfile = { ...profile, lastPeriodStart: date };
+
+    // Save to Supabase
+    if (userId) {
+      await updateSupabaseProfile(userId, { last_period_start: date });
+    }
+
     await storage.saveProfile(updatedProfile);
     const todayCycle = getTodayCycleInfo(updatedProfile);
     const cycleForecast = getCycleForecast(updatedProfile, 30);
@@ -104,7 +178,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   logEnergy: async (logData) => {
-    const { todayCycle, energyLogs } = get();
+    const { todayCycle, energyLogs, userId } = get();
 
     const log: EnergyLog = {
       id: Date.now().toString(),
@@ -114,9 +188,21 @@ export const useStore = create<AppState>((set, get) => ({
       cyclePhase: todayCycle?.phase,
     };
 
+    // Save to Supabase
+    if (userId) {
+      await logSupabaseEnergy(userId, {
+        energy_level: log.energyLevel,
+        mood: log.mood,
+        focus: log.focus,
+        notes: log.notes,
+        cycle_day: log.cycleDay,
+        cycle_phase: log.cyclePhase,
+      });
+    }
+
     await storage.saveEnergyLog(log);
     set({
-      energyLogs: [...energyLogs, log],
+      energyLogs: [log, ...energyLogs],
       todayEnergy: log,
     });
   },
