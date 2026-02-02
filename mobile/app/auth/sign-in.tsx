@@ -34,8 +34,10 @@ export default function SignInScreen() {
 
     if (error) {
       Alert.alert('Sign In Failed', error.message);
+    } else {
+      // Navigate to index which will handle redirect logic
+      router.replace('/');
     }
-    // Auth state change will trigger navigation
   };
 
   return (

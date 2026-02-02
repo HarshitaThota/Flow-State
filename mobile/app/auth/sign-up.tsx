@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
@@ -16,6 +16,7 @@ import { Button } from '../../components/Button';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function SignUpScreen() {
+  const router = useRouter();
   const { signUp } = useAuth();
 
   const [name, setName] = useState('');
@@ -47,11 +48,8 @@ export default function SignUpScreen() {
     if (error) {
       Alert.alert('Sign Up Failed', error.message);
     } else {
-      Alert.alert(
-        'Check your email',
-        'We sent you a confirmation link. Please verify your email to continue.',
-        [{ text: 'OK' }]
-      );
+      // Email confirmation is disabled, go straight to onboarding
+      router.replace('/');
     }
   };
 
