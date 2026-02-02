@@ -49,10 +49,11 @@ export interface Goal {
 export interface UserProfile {
   id: string;
   name: string;
-  cycleLength: number; // average, typically 28
-  periodLength: number; // average, typically 5
-  lastPeriodStart: string; // ISO date
+  cycleLength?: number; // average, typically 28 (optional if not tracking)
+  periodLength?: number; // average, typically 5 (optional if not tracking)
+  lastPeriodStart?: string; // ISO date (optional if not tracking)
   chronotype: Chronotype;
+  tracksCycle?: boolean; // whether user wants to track their cycle
   createdAt: string;
   updatedAt: string;
 }

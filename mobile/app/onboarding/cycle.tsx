@@ -31,14 +31,40 @@ export default function CycleScreen() {
   const cycleLengthOptions = [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35];
   const periodLengthOptions = [3, 4, 5, 6, 7, 8];
 
+  const handleContinue = () => {
+    router.push({
+      pathname: '/onboarding/chronotype',
+      params: {
+        name,
+        lastPeriodStart: lastPeriodStart.toISOString(),
+        cycleLength: cycleLength.toString(),
+        periodLength: periodLength.toString(),
+        tracksCycle: 'true',
+      },
+    });
+  };
+
+  const handleSkip = () => {
+    router.push({
+      pathname: '/onboarding/chronotype',
+      params: {
+        name,
+        lastPeriodStart: '',
+        cycleLength: '0',
+        periodLength: '0',
+        tracksCycle: 'false',
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ProgressDots total={4} current={1} />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Let's learn your cycle</Text>
+        <Text style={styles.title}>Track your cycle?</Text>
         <Text style={styles.subtitle}>
-          This helps predict your energy patterns throughout the month
+          Cycle tracking can reveal energy patterns, but it's completely optional.
         </Text>
 
         {/* Last Period Start */}
@@ -90,7 +116,7 @@ export default function CycleScreen() {
         <View style={styles.section}>
           <Text style={styles.label}>Average cycle length (days)</Text>
           <Text style={styles.hint}>
-            From the start of one period to the start of the next
+            From the start of one period to the next
           </Text>
           <ScrollView
             horizontal
@@ -152,27 +178,16 @@ export default function CycleScreen() {
         <View style={styles.infoBox}>
           <Text style={styles.infoEmoji}>💡</Text>
           <Text style={styles.infoText}>
-            Don't worry if you're not sure - these are estimates. The app will
-            learn your actual patterns over time.
+            Don't worry if you're not sure - these are estimates. You can always change this later.
           </Text>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button
-          title="Continue"
-          onPress={() =>
-            router.push({
-              pathname: '/onboarding/chronotype',
-              params: {
-                name,
-                lastPeriodStart: lastPeriodStart.toISOString(),
-                cycleLength: cycleLength.toString(),
-                periodLength: periodLength.toString(),
-              },
-            })
-          }
-        />
+        <Button title="Continue with Cycle Tracking" onPress={handleContinue} />
+        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+          <Text style={styles.skipText}>Skip - I don't want to track this</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -261,7 +276,7 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     flexDirection: 'row',
-    backgroundColor: '#fef3c7',
+    backgroundColor: '#f0fdf4',
     padding: 16,
     borderRadius: 12,
     marginTop: 8,
@@ -274,11 +289,20 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: '#92400e',
+    color: '#166534',
     lineHeight: 20,
   },
   footer: {
     paddingHorizontal: 24,
     paddingBottom: 32,
+  },
+  skipButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  skipText: {
+    fontSize: 16,
+    color: '#6b7280',
   },
 });

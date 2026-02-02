@@ -1,4 +1,4 @@
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
@@ -10,6 +10,7 @@ export default function RootLayout() {
   const { initialize, isLoading: storeLoading, isOnboarded } = useStore();
   const router = useRouter();
   const segments = useSegments();
+  const navigationState = useRootNavigationState();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -18,6 +19,8 @@ export default function RootLayout() {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    // Wait for navigation to be ready
+    if (!navigationState?.key) return;
     if (authLoading) return;
 
     const inAuthGroup = segments[0] === 'auth';
@@ -41,7 +44,7 @@ export default function RootLayout() {
         router.replace('/(tabs)');
       }
     }
-  }, [authLoading, isAuthenticated, storeLoading, isOnboarded, segments]);
+  }, [navigationState?.key, authLoading, isAuthenticated, storeLoading, isOnboarded, segments]);
 
   if (authLoading || (isAuthenticated && storeLoading)) {
     return (

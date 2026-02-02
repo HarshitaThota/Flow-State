@@ -60,6 +60,7 @@ export default function GoalsScreen() {
     cycleLength: string;
     periodLength: string;
     chronotype: Chronotype;
+    tracksCycle: string;
   }>();
 
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
@@ -72,14 +73,17 @@ export default function GoalsScreen() {
   };
 
   const handleComplete = async () => {
+    const tracksCycle = params.tracksCycle === 'true';
+
     // Create profile from onboarding data
     const profile = {
       id: Date.now().toString(),
       name: params.name,
-      cycleLength: parseInt(params.cycleLength, 10),
-      periodLength: parseInt(params.periodLength, 10),
-      lastPeriodStart: params.lastPeriodStart,
+      cycleLength: tracksCycle ? parseInt(params.cycleLength, 10) : undefined,
+      periodLength: tracksCycle ? parseInt(params.periodLength, 10) : undefined,
+      lastPeriodStart: tracksCycle ? params.lastPeriodStart : undefined,
       chronotype: params.chronotype,
+      tracksCycle,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

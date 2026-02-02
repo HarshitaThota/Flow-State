@@ -39,6 +39,7 @@ export default function ChronotypeScreen() {
     lastPeriodStart: string;
     cycleLength: string;
     periodLength: string;
+    tracksCycle: string;
   }>();
 
   const [chronotype, setChronotype] = useState<Chronotype | null>(null);

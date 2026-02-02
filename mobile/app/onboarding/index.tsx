@@ -8,28 +8,28 @@ export default function WelcomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.emoji}>🌊</Text>
+        <Text style={styles.emoji}>⚡</Text>
         <Text style={styles.title}>Flow State</Text>
         <Text style={styles.subtitle}>
-          Your energy isn't the same every day.{'\n'}
-          Let's work with your natural rhythms, not against them.
+          Understand your energy patterns.{'\n'}
+          Work with your body, not against it.
         </Text>
 
         <View style={styles.features}>
           <FeatureItem
-            emoji="🔄"
-            title="Cycle-Aware"
-            description="Recommendations adapt to your hormonal phases"
-          />
-          <FeatureItem
-            emoji="⚡"
+            emoji="📊"
             title="Energy Tracking"
             description="Learn when you're sharpest vs when to rest"
           />
           <FeatureItem
+            emoji="🧠"
+            title="Pattern Recognition"
+            description="Discover what affects YOUR energy"
+          />
+          <FeatureItem
             emoji="🎯"
-            title="Smart Scheduling"
-            description="Match tasks to your optimal energy windows"
+            title="Smart Planning"
+            description="Match tasks to your optimal windows"
           />
         </View>
       </View>
@@ -40,7 +40,7 @@ export default function WelcomeScreen() {
           onPress={() => router.push('/onboarding/profile')}
         />
         <Text style={styles.privacy}>
-          Your data stays on your device. Always.
+          Your data is private and secure.
         </Text>
       </View>
     </SafeAreaView>

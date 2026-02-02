@@ -36,7 +36,7 @@ export default function TodayScreen() {
   const router = useRouter();
   const { profile, todayCycle, todayEnergy } = useStore();
 
-  if (!profile || !todayCycle) {
+  if (!profile) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loading}>
@@ -46,9 +46,10 @@ export default function TodayScreen() {
     );
   }
 
-  const phase = todayCycle.phase;
-  const colors = phaseColors[phase];
-  const recommendations = getPhaseRecommendations(phase);
+  const tracksCycle = profile.tracksCycle !== false && todayCycle;
+  const phase = todayCycle?.phase;
+  const colors = phase ? phaseColors[phase] : null;
+  const recommendations = phase ? getPhaseRecommendations(phase) : null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -62,90 +63,94 @@ export default function TodayScreen() {
           <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
         </View>
 
-        {/* Cycle Phase Card */}
-        <View style={[styles.phaseCard, { backgroundColor: colors.bg }]}>
-          <View style={styles.phaseHeader}>
-            <Text style={styles.phaseEmoji}>{phaseEmojis[phase]}</Text>
-            <View style={styles.phaseInfo}>
-              <Text style={[styles.phaseName, { color: colors.text }]}>
-                {phaseNames[phase]}
-              </Text>
-              <Text style={[styles.cycleDay, { color: colors.accent }]}>
-                Day {todayCycle.dayOfCycle} of your cycle
-              </Text>
-            </View>
-          </View>
-          <Text style={[styles.phaseTip, { color: colors.text }]}>
-            {recommendations.tips}
-          </Text>
-        </View>
-
-        {/* Energy Check-in */}
+        {/* Energy Check-in - NOW FIRST */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>How are you feeling?</Text>
+          <Text style={styles.sectionTitle}>How's your energy?</Text>
           {todayEnergy ? (
             <View style={styles.energyLogged}>
-              <Text style={styles.energyValue}>
-                Energy: {todayEnergy.energyLevel}/10
-              </Text>
-              <Text style={styles.energyTime}>
-                Logged at {format(new Date(todayEnergy.timestamp), 'h:mm a')}
-              </Text>
+              <View style={styles.energyHeader}>
+                <Text style={styles.energyEmoji}>⚡</Text>
+                <View>
+                  <Text style={styles.energyValue}>
+                    {todayEnergy.energyLevel}/10
+                  </Text>
+                  <Text style={styles.energyTime}>
+                    Logged at {format(new Date(todayEnergy.timestamp), 'h:mm a')}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.logAgainButton}
+                onPress={() => router.push('/log-energy')}
+              >
+                <Text style={styles.logAgainText}>Update</Text>
+              </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity
               style={styles.logButton}
               onPress={() => router.push('/log-energy')}
             >
+              <Text style={styles.logButtonEmoji}>⚡</Text>
               <Text style={styles.logButtonText}>Log your energy</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        {/* Best For Today */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Great for today</Text>
-          <View style={styles.tagContainer}>
-            {recommendations.bestFor.map((item) => (
-              <View
-                key={item}
-                style={[styles.tag, { backgroundColor: colors.bg }]}
-              >
-                <Text style={[styles.tagText, { color: colors.text }]}>
-                  {item}
-                </Text>
+        {/* Cycle Phase Card - Only if tracking */}
+        {tracksCycle && phase && colors && recommendations && (
+          <>
+            <View style={[styles.phaseCard, { backgroundColor: colors.bg }]}>
+              <View style={styles.phaseHeader}>
+                <Text style={styles.phaseEmoji}>{phaseEmojis[phase]}</Text>
+                <View style={styles.phaseInfo}>
+                  <Text style={[styles.phaseName, { color: colors.text }]}>
+                    {phaseNames[phase]}
+                  </Text>
+                  <Text style={[styles.cycleDay, { color: colors.accent }]}>
+                    Day {todayCycle.dayOfCycle} of your cycle
+                  </Text>
+                </View>
               </View>
-            ))}
-          </View>
-        </View>
+              <Text style={[styles.phaseTip, { color: colors.text }]}>
+                {recommendations.tips}
+              </Text>
+            </View>
 
-        {/* Consider Avoiding */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Consider postponing</Text>
-          <View style={styles.tagContainer}>
-            {recommendations.avoid.map((item) => (
-              <View key={item} style={[styles.tag, styles.avoidTag]}>
-                <Text style={styles.avoidTagText}>{item}</Text>
+            {/* Best For Today */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Great for today</Text>
+              <View style={styles.tagContainer}>
+                {recommendations.bestFor.map((item) => (
+                  <View
+                    key={item}
+                    style={[styles.tag, { backgroundColor: colors.bg }]}
+                  >
+                    <Text style={[styles.tagText, { color: colors.text }]}>
+                      {item}
+                    </Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-        </View>
+            </View>
+
+            {/* Consider Avoiding */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Consider postponing</Text>
+              <View style={styles.tagContainer}>
+                {recommendations.avoid.map((item) => (
+                  <View key={item} style={[styles.tag, styles.avoidTag]}>
+                    <Text style={styles.avoidTagText}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </>
+        )}
 
         {/* Quick Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick actions</Text>
-
-          {/* Period Started Button - Prominent */}
-          <TouchableOpacity
-            style={styles.periodButton}
-            onPress={() => router.push('/log-period')}
-          >
-            <Text style={styles.periodButtonEmoji}>🩸</Text>
-            <View style={styles.periodButtonText}>
-              <Text style={styles.periodButtonTitle}>Period started?</Text>
-              <Text style={styles.periodButtonSubtitle}>Tap to log</Text>
-            </View>
-          </TouchableOpacity>
 
           <View style={styles.actionsGrid}>
             <TouchableOpacity
@@ -162,13 +167,15 @@ export default function TodayScreen() {
               <Text style={styles.actionEmoji}>📝</Text>
               <Text style={styles.actionLabel}>Symptoms</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => router.push('/(tabs)/cycle')}
-            >
-              <Text style={styles.actionEmoji}>📅</Text>
-              <Text style={styles.actionLabel}>Calendar</Text>
-            </TouchableOpacity>
+            {tracksCycle && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => router.push('/log-period')}
+              >
+                <Text style={styles.actionEmoji}>🩸</Text>
+                <Text style={styles.actionLabel}>Period</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => router.push('/(tabs)/insights')}
@@ -178,6 +185,26 @@ export default function TodayScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Enable Cycle Tracking CTA - Only if not tracking */}
+        {!tracksCycle && (
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.enableCycleCard}
+              onPress={() => router.push('/log-period')}
+            >
+              <Text style={styles.enableCycleEmoji}>🔄</Text>
+              <View style={styles.enableCycleText}>
+                <Text style={styles.enableCycleTitle}>
+                  Want to track your cycle?
+                </Text>
+                <Text style={styles.enableCycleSubtitle}>
+                  Optional - can reveal more energy patterns
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -215,6 +242,69 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
   },
+  section: {
+    paddingHorizontal: 24,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  energyLogged: {
+    backgroundColor: '#f0fdf4',
+    padding: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  energyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  energyEmoji: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  energyValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#166534',
+  },
+  energyTime: {
+    fontSize: 13,
+    color: '#16a34a',
+  },
+  logAgainButton: {
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  logAgainText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#166534',
+  },
+  logButton: {
+    backgroundColor: '#8b5cf6',
+    padding: 20,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logButtonEmoji: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  logButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
   phaseCard: {
     marginHorizontal: 24,
     padding: 20,
@@ -246,42 +336,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  section: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-  energyLogged: {
-    backgroundColor: '#f0fdf4',
-    padding: 16,
-    borderRadius: 12,
-  },
-  energyValue: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#166534',
-  },
-  energyTime: {
-    fontSize: 14,
-    color: '#16a34a',
-    marginTop: 4,
-  },
-  logButton: {
-    backgroundColor: '#8b5cf6',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  logButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -304,30 +358,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#991b1b',
   },
-  periodButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fce4ec',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  periodButtonEmoji: {
-    fontSize: 28,
-    marginRight: 12,
-  },
-  periodButtonText: {
-    flex: 1,
-  },
-  periodButtonTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#c2185b',
-  },
-  periodButtonSubtitle: {
-    fontSize: 13,
-    color: '#e91e63',
-  },
   actionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -348,5 +378,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#4b5563',
+  },
+  enableCycleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f3ff',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9d5ff',
+    borderStyle: 'dashed',
+  },
+  enableCycleEmoji: {
+    fontSize: 28,
+    marginRight: 12,
+  },
+  enableCycleText: {
+    flex: 1,
+  },
+  enableCycleTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#7c3aed',
+  },
+  enableCycleSubtitle: {
+    fontSize: 13,
+    color: '#a78bfa',
   },
 });
