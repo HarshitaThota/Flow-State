@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -8,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../../hooks/useAuth';
 import { useStore } from '../../hooks/useStore';
 import { getPhaseRecommendations } from '../../utils/cycle';
 
@@ -34,7 +36,22 @@ const phaseNames = {
 
 export default function TodayScreen() {
   const router = useRouter();
+  const { signOut } = useAuth();
   const { profile, todayCycle, todayEnergy } = useStore();
+
+  const handleSignOut = () => {
+    Alert.alert('Sign Out', 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign Out',
+        style: 'destructive',
+        onPress: async () => {
+          await signOut();
+          router.replace('/auth/sign-in');
+        },
+      },
+    ]);
+  };
 
   if (!profile) {
     return (
@@ -59,8 +76,15 @@ export default function TodayScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.greeting}>Hey {profile.name}</Text>
-          <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
+          <View style={styles.headerRow}>
+            <View>
+              <Text style={styles.greeting}>Hey {profile.name}</Text>
+              <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
+            </View>
+            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+              <Text style={styles.signOutText}>Sign Out</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Energy Check-in - NOW FIRST */}
@@ -231,6 +255,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 24,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  signOutButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  signOutText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6b7280',
   },
   greeting: {
     fontSize: 28,
