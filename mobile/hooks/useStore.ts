@@ -6,7 +6,7 @@ import type {
   UserProfile,
 } from '../../shared/types';
 import * as storage from '../services/storage';
-import { supabase, updateProfile as updateSupabaseProfile, logEnergy as logSupabaseEnergy } from '../services/supabase';
+import { supabase, updateProfile as updateSupabaseProfile, logEnergy as logSupabaseEnergy, logSymptoms as logSupabaseSymptoms } from '../services/supabase';
 import { getCycleForecast, getTodayCycleInfo } from '../utils/cycle';
 
 interface AppState {
@@ -36,6 +36,14 @@ interface AppState {
   logEnergy: (
     log: Omit<EnergyLog, 'id' | 'timestamp' | 'cycleDay' | 'cyclePhase'>,
   ) => Promise<void>;
+  logSymptoms: (data: {
+    symptoms: Record<string, number>;
+    sleepHours?: number;
+    sleepQuality?: string;
+    exercised: boolean;
+    exerciseMinutes?: number;
+    notes?: string;
+  }) => Promise<void>;
   addGoal: (goal: Omit<Goal, 'id' | 'progress'>) => Promise<void>;
   updateGoal: (goalId: string, updates: Partial<Goal>) => Promise<void>;
   completeTask: (goalId: string, taskId: string) => Promise<void>;
@@ -205,6 +213,31 @@ export const useStore = create<AppState>((set, get) => ({
       energyLogs: [log, ...energyLogs],
       todayEnergy: log,
     });
+  },
+
+  logSymptoms: async (data) => {
+    const { todayCycle, userId } = get();
+
+    if (userId) {
+      await logSupabaseSymptoms(userId, {
+        cycle_day: todayCycle?.dayOfCycle,
+        cycle_phase: todayCycle?.phase,
+        cramps: data.symptoms.cramps,
+        headache: data.symptoms.headache,
+        bloating: data.symptoms.bloating,
+        breast_tenderness: data.symptoms.breast_tenderness,
+        acne: data.symptoms.acne,
+        fatigue: data.symptoms.fatigue,
+        cravings: data.symptoms.cravings,
+        mood_swings: data.symptoms.mood_swings,
+        anxiety: data.symptoms.anxiety,
+        sleep_hours: data.sleepHours,
+        sleep_quality: data.sleepQuality,
+        exercised: data.exercised,
+        exercise_minutes: data.exerciseMinutes,
+        notes: data.notes,
+      });
+    }
   },
 
   addGoal: async (goalData) => {

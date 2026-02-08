@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -10,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Button } from '../components/Button';
+import { useStore } from '../hooks/useStore';
 
 type Severity = 0 | 1 | 2 | 3;
 type SleepQuality = 'great' | 'good' | 'okay' | 'poor' | 'terrible';
@@ -37,6 +39,7 @@ const sleepOptions: { value: SleepQuality; emoji: string; label: string }[] = [
 
 export default function LogSymptomsScreen() {
   const router = useRouter();
+  const { logSymptoms } = useStore();
   const [symptomValues, setSymptomValues] = useState<Record<string, Severity>>({});
   const [sleepHours, setSleepHours] = useState('');
   const [sleepQuality, setSleepQuality] = useState<SleepQuality | null>(null);
@@ -51,17 +54,21 @@ export default function LogSymptomsScreen() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // TODO: Save to storage/Supabase
-    console.log('Symptoms:', {
-      ...symptomValues,
-      sleepHours: sleepHours ? parseFloat(sleepHours) : undefined,
-      sleepQuality,
-      exercised,
-      exerciseMinutes: exerciseMinutes ? parseInt(exerciseMinutes, 10) : undefined,
-      notes,
-    });
-    setIsSubmitting(false);
-    router.back();
+    try {
+      await logSymptoms({
+        symptoms: symptomValues,
+        sleepHours: sleepHours ? parseFloat(sleepHours) : undefined,
+        sleepQuality: sleepQuality ?? undefined,
+        exercised,
+        exerciseMinutes: exerciseMinutes ? parseInt(exerciseMinutes, 10) : undefined,
+        notes: notes || undefined,
+      });
+      router.back();
+    } catch {
+      Alert.alert('Error', 'Failed to save symptoms. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
