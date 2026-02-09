@@ -94,8 +94,8 @@ export const useStore = create<AppState>((set, get) => ({
         createdAt: supabaseProfile.created_at,
         updatedAt: supabaseProfile.updated_at,
       };
-      // Consider onboarded if they have cycle info
-      isOnboarded = !!supabaseProfile.last_period_start;
+      // Consider onboarded if they have a name (always set during onboarding)
+      isOnboarded = !!supabaseProfile.name;
     }
 
     // Get energy logs from Supabase

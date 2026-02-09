@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import {
   Alert,
   SafeAreaView,
@@ -9,9 +10,41 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import type { EnergyLog } from '../../../shared/types';
 import { useAuth } from '../../hooks/useAuth';
 import { useStore } from '../../hooks/useStore';
 import { getPhaseRecommendations } from '../../utils/cycle';
+
+function calculateStreak(energyLogs: EnergyLog[]): number {
+  if (energyLogs.length === 0) return 0;
+
+  const logDates = new Set(
+    energyLogs.map((log) => log.timestamp.split('T')[0]),
+  );
+
+  let streak = 0;
+  const today = new Date();
+
+  for (let i = 0; i < 365; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+
+    if (logDates.has(dateStr)) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+const chronotypeLabels: Record<string, { label: string; emoji: string }> = {
+  early_bird: { label: 'Early Bird', emoji: '🌅' },
+  night_owl: { label: 'Night Owl', emoji: '🦉' },
+  third_bird: { label: 'Third Bird', emoji: '🐦' },
+};
 
 const phaseColors = {
   menstrual: { bg: '#fce4ec', text: '#c2185b', accent: '#e91e63' },
@@ -37,7 +70,9 @@ const phaseNames = {
 export default function TodayScreen() {
   const router = useRouter();
   const { signOut } = useAuth();
-  const { profile, todayCycle, todayEnergy } = useStore();
+  const { profile, todayCycle, todayEnergy, energyLogs } = useStore();
+
+  const streak = useMemo(() => calculateStreak(energyLogs), [energyLogs]);
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure?', [
@@ -87,7 +122,29 @@ export default function TodayScreen() {
           </View>
         </View>
 
-        {/* Energy Check-in - NOW FIRST */}
+        {/* Streak & Chronotype */}
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statEmoji}>{streak > 0 ? '🔥' : '💤'}</Text>
+            <Text style={styles.statValue}>{streak}</Text>
+            <Text style={styles.statLabel}>
+              {streak === 1 ? 'day' : 'days'} streak
+            </Text>
+          </View>
+          {profile.chronotype && chronotypeLabels[profile.chronotype] && (
+            <View style={styles.statCard}>
+              <Text style={styles.statEmoji}>
+                {chronotypeLabels[profile.chronotype].emoji}
+              </Text>
+              <Text style={styles.statValue}>
+                {chronotypeLabels[profile.chronotype].label}
+              </Text>
+              <Text style={styles.statLabel}>your rhythm</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Energy Check-in */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>How's your energy?</Text>
           {todayEnergy ? (
@@ -281,6 +338,33 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 16,
     color: '#6b7280',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    gap: 12,
+    marginBottom: 24,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  statEmoji: {
+    fontSize: 22,
+    marginBottom: 4,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1f2937',
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#6b7280',
+    marginTop: 2,
   },
   section: {
     paddingHorizontal: 24,
