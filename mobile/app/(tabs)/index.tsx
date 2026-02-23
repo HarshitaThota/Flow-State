@@ -131,13 +131,23 @@ export default function TodayScreen() {
 
         {/* Streak & Chronotype */}
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
+          <TouchableOpacity
+            style={styles.statCard}
+            onPress={streak === 0 ? () => router.push('/log-energy') : undefined}
+            activeOpacity={streak === 0 ? 0.7 : 1}
+          >
             <Text style={styles.statEmoji}>{streak > 0 ? '🔥' : '💤'}</Text>
             <Text style={styles.statValue}>{streak}</Text>
             <Text style={styles.statLabel}>
-              {streak === 1 ? 'day' : 'days'} streak
+              {streak === 0
+                ? 'log to start!'
+                : streak >= 7
+                  ? 'on fire!'
+                  : streak === 1
+                    ? 'day streak'
+                    : 'days streak'}
             </Text>
-          </View>
+          </TouchableOpacity>
           {profile.chronotype && chronotypeLabels[profile.chronotype] && (
             <View style={styles.statCard}>
               <Text style={styles.statEmoji}>
