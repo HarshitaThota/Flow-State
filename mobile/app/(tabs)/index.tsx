@@ -113,7 +113,14 @@ export default function TodayScreen() {
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.greeting}>Hey {profile.name}</Text>
+              <Text style={styles.greeting}>
+                {new Date().getHours() < 12
+                  ? 'Good morning'
+                  : new Date().getHours() < 17
+                    ? 'Good afternoon'
+                    : 'Good evening'}
+                , {profile.name}
+              </Text>
               <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
             </View>
             <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
