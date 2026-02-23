@@ -90,7 +90,7 @@ export const useStore = create<AppState>((set, get) => ({
         cycleLength: supabaseProfile.cycle_length || 28,
         periodLength: supabaseProfile.period_length || 5,
         lastPeriodStart: supabaseProfile.last_period_start || '',
-        chronotype: supabaseProfile.chronotype || 'intermediate',
+        chronotype: supabaseProfile.chronotype || undefined,
         createdAt: supabaseProfile.created_at,
         updatedAt: supabaseProfile.updated_at,
       };
