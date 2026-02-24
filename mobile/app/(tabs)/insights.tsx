@@ -136,18 +136,20 @@ export default function InsightsScreen() {
           </View>
         ) : (
           <>
-            {/* Energy by Phase */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Energy by Cycle Phase</Text>
-              <View style={styles.phaseCards}>
-                {phaseAverages.map(({ phase, average }) => (
-                  <View key={phase} style={styles.phaseCard}>
-                    <Text style={styles.phaseAverage}>{average}</Text>
-                    <Text style={styles.phaseName}>{phase}</Text>
-                  </View>
-                ))}
+            {/* Energy by Phase - only if tracking cycle */}
+            {phaseAverages.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Energy by Cycle Phase</Text>
+                <View style={styles.phaseCards}>
+                  {phaseAverages.map(({ phase, average }) => (
+                    <View key={phase} style={styles.phaseCard}>
+                      <Text style={styles.phaseAverage}>{average}</Text>
+                      <Text style={styles.phaseName}>{phase}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
-            </View>
+            )}
 
             {/* Energy by Time of Day */}
             {timeAverages.length > 0 && (
