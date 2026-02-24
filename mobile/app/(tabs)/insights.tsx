@@ -1,6 +1,19 @@
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from '../../hooks/useStore';
 
+function getTimeOfDay(timestamp: string): string {
+  const hour = new Date(timestamp).getHours();
+  if (hour < 12) return 'Morning';
+  if (hour < 17) return 'Afternoon';
+  return 'Evening';
+}
+
+const timeEmojis: Record<string, string> = {
+  Morning: '🌅',
+  Afternoon: '☀️',
+  Evening: '🌙',
+};
+
 export default function InsightsScreen() {
   const { energyLogs } = useStore();
 
@@ -23,6 +36,32 @@ export default function InsightsScreen() {
     phase,
     average: Math.round((data.total / data.count) * 10) / 10,
   }));
+
+  // Calculate average energy by time of day
+  const energyByTime = energyLogs.reduce(
+    (acc, log) => {
+      const time = getTimeOfDay(log.timestamp);
+      if (!acc[time]) {
+        acc[time] = { total: 0, count: 0 };
+      }
+      acc[time].total += log.energyLevel;
+      acc[time].count += 1;
+      return acc;
+    },
+    {} as Record<string, { total: number; count: number }>,
+  );
+
+  const timeAverages = ['Morning', 'Afternoon', 'Evening']
+    .filter((t) => energyByTime[t])
+    .map((time) => ({
+      time,
+      emoji: timeEmojis[time],
+      average: Math.round((energyByTime[time].total / energyByTime[time].count) * 10) / 10,
+    }));
+
+  const bestTime = timeAverages.length > 0
+    ? timeAverages.reduce((a, b) => (a.average > b.average ? a : b))
+    : null;
 
   const hasEnoughData = energyLogs.length >= 5;
 
@@ -80,6 +119,38 @@ export default function InsightsScreen() {
                 ))}
               </View>
             </View>
+
+            {/* Energy by Time of Day */}
+            {timeAverages.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Energy by Time of Day</Text>
+                <View style={styles.timeCards}>
+                  {timeAverages.map(({ time, emoji, average }) => (
+                    <View
+                      key={time}
+                      style={[
+                        styles.timeCard,
+                        bestTime?.time === time && styles.timeCardBest,
+                      ]}
+                    >
+                      <Text style={styles.timeEmoji}>{emoji}</Text>
+                      <Text
+                        style={[
+                          styles.timeAverage,
+                          bestTime?.time === time && styles.timeAverageBest,
+                        ]}
+                      >
+                        {average}
+                      </Text>
+                      <Text style={styles.timeName}>{time}</Text>
+                      {bestTime?.time === time && (
+                        <Text style={styles.timeBestLabel}>Peak</Text>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
 
             {/* Total Logs */}
             <View style={styles.section}>
@@ -262,6 +333,47 @@ const styles = StyleSheet.create({
     color: '#6d28d9',
     marginTop: 4,
     textTransform: 'capitalize',
+  },
+  timeCards: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  timeCard: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  timeCardBest: {
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+  },
+  timeEmoji: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
+  timeAverage: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#374151',
+  },
+  timeAverageBest: {
+    color: '#166534',
+  },
+  timeName: {
+    fontSize: 11,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  timeBestLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#16a34a',
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   statsRow: {
     flexDirection: 'row',
