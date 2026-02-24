@@ -43,6 +43,9 @@ export default function LogPeriodScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
+        <Text style={styles.closeText}>Cancel</Text>
+      </TouchableOpacity>
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.emoji}>🩸</Text>
@@ -137,6 +140,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  closeButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  closeText: {
+    fontSize: 16,
+    color: '#6b7280',
   },
   content: {
     flex: 1,

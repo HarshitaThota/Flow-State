@@ -73,6 +73,9 @@ export default function LogSymptomsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
+        <Text style={styles.closeText}>Cancel</Text>
+      </TouchableOpacity>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.title}>How are you feeling?</Text>
@@ -222,6 +225,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  closeButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  closeText: {
+    fontSize: 16,
+    color: '#6b7280',
   },
   scrollView: {
     flex: 1,
