@@ -63,6 +63,35 @@ export default function InsightsScreen() {
     ? timeAverages.reduce((a, b) => (a.average > b.average ? a : b))
     : null;
 
+  // Calculate mood distribution
+  const moodEmojis: Record<string, string> = {
+    great: '😄',
+    good: '🙂',
+    okay: '😐',
+    low: '😔',
+    rough: '😞',
+  };
+
+  const moodCounts = energyLogs.reduce(
+    (acc, log) => {
+      if (log.mood) {
+        acc[log.mood] = (acc[log.mood] || 0) + 1;
+      }
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  const totalMoods = Object.values(moodCounts).reduce((a, b) => a + b, 0);
+  const moodDistribution = ['great', 'good', 'okay', 'low', 'rough']
+    .filter((m) => moodCounts[m])
+    .map((mood) => ({
+      mood,
+      emoji: moodEmojis[mood],
+      count: moodCounts[mood],
+      pct: Math.round((moodCounts[mood] / totalMoods) * 100),
+    }));
+
   const hasEnoughData = energyLogs.length >= 5;
 
   return (
@@ -172,6 +201,25 @@ export default function InsightsScreen() {
                 </View>
               </View>
             </View>
+
+            {/* Mood Breakdown */}
+            {moodDistribution.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Mood Breakdown</Text>
+                <View style={styles.moodList}>
+                  {moodDistribution.map(({ mood, emoji, count, pct }) => (
+                    <View key={mood} style={styles.moodRow}>
+                      <Text style={styles.moodEmoji}>{emoji}</Text>
+                      <Text style={styles.moodLabel}>{mood}</Text>
+                      <View style={styles.moodBarContainer}>
+                        <View style={[styles.moodBar, { width: `${pct}%` }]} />
+                      </View>
+                      <Text style={styles.moodPct}>{pct}%</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
 
             {/* Tips */}
             <View style={styles.section}>
@@ -395,6 +443,42 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     marginTop: 4,
+  },
+  moodList: {
+    gap: 10,
+  },
+  moodRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  moodEmoji: {
+    fontSize: 18,
+    width: 28,
+  },
+  moodLabel: {
+    fontSize: 13,
+    color: '#374151',
+    width: 50,
+    textTransform: 'capitalize',
+  },
+  moodBarContainer: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 4,
+    marginHorizontal: 8,
+  },
+  moodBar: {
+    height: 8,
+    backgroundColor: '#8b5cf6',
+    borderRadius: 4,
+  },
+  moodPct: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6b7280',
+    width: 36,
+    textAlign: 'right',
   },
   tipCard: {
     flexDirection: 'row',
